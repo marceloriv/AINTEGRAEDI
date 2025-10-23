@@ -1,0 +1,16 @@
+# Configuración de la Base de Datos Oracle
+# INSTRUCCIONES: Copia este archivo como 'database.properties' y completa con tus datos
+
+# Ruta al wallet de Oracle (relativa al directorio raíz del proyecto)
+# Ejemplo: src\\main\\resource\\wallet
+wallet.path=TU_RUTA_AL_WALLET
+
+# Nombre del servicio TNS (consulta tnsnames.ora en tu wallet)
+# Ejemplo: lab1_high, lab1_medium, lab1_low
+service.name=TU_SERVICIO_TNS
+
+# Usuario de la base de datos
+db.user=TU_USUARIO
+
+# Contraseña de la base de datos
+db.password=TU_CONTRASEÑA
