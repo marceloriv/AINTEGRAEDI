@@ -4,6 +4,10 @@ src/main/resource/database.properties
 # Wallet de Oracle con certificados
 src/main/resource/wallet/
 
+# Scripts de compilación/ejecución locales
+compilar.ps1
+ejecutar.ps1
+
 # Archivos compilados
 target/
 *.class
