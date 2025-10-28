@@ -128,12 +128,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         //btnIngrid.addActionListener(e -> ejecutarScript("reporte_multas_atraso.sql"));
         //panelScripts.add(btnIngrid);
         // Botón para ejecutar todos
-        javax.swing.JButton btnTodos = new javax.swing.JButton("⚡ Ejecutar TODOS");
-        btnTodos.setBackground(new java.awt.Color(255, 153, 51));
-        btnTodos.setForeground(java.awt.Color.WHITE);
-        btnTodos.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
-        btnTodos.addActionListener(e -> ejecutarTodosLosScripts());
-        panelScripts.add(btnTodos);
+        // javax.swing.JButton btnTodos = new javax.swing.JButton("⚡ Ejecutar TODOS");
+         //btnTodos.setBackground(new java.awt.Color(255, 153, 51));
+         //btnTodos.setForeground(java.awt.Color.WHITE);
+        //btnTodos.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
+         //btnTodos.addActionListener(e -> ejecutarTodosLosScripts());
+         //panelScripts.add(btnTodos);
 
         // Agregar instrucciones
         javax.swing.JTextArea txtInstrucciones = new javax.swing.JTextArea(
