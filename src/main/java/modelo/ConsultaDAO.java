@@ -1,6 +1,10 @@
 package modelo;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -11,40 +15,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import bd.DatabaseManager;
 
 /**
- * DAO (Data Access Object) - El "experto en SQL"
- * Este archivo NO sabe nada de consolas, ventanas o interfaces.
- * Solo sabe ejecutar SQL y devolver datos.
+ * DAO (Data Access Object) para consultas SQL y PL/SQL
  */
 public class ConsultaDAO {
 
     /**
-     * Método de prueba básico - consulta DUAL
-     */
-    public List<String> getResultadosDual() {
-        List<String> resultados = new ArrayList<>();
-        String sql = "SELECT 'Conectado exitosamente' AS RESULTADO FROM DUAL";
-
-        try (Connection conn = DatabaseManager.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
-
-            System.out.println("Conexión exitosa a Oracle con Wallet.");
-            while (rs.next()) {
-                resultados.add(rs.getString("RESULTADO"));
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al consultar la base de datos: " + e.getMessage());
-        }
-        return resultados;
-    }
-
-    /**
      * Obtiene la lista de todas las tablas del esquema
-     * 
+     *
      * @return Lista con nombres de tablas
      */
     public List<String> obtenerNombresDeTablas() {
@@ -68,7 +50,7 @@ public class ConsultaDAO {
 
     /**
      * Obtiene todos los datos de una tabla específica
-     * 
+     *
      * @param nombreTabla El nombre de la tabla a consultar
      * @return Lista de mapas, donde cada mapa es una fila (columna -> valor)
      */
@@ -122,7 +104,7 @@ public class ConsultaDAO {
 
     /**
      * Obtiene los nombres de las columnas de una tabla
-     * 
+     *
      * @param nombreTabla El nombre de la tabla
      * @return Lista con nombres de columnas
      */
@@ -160,8 +142,200 @@ public class ConsultaDAO {
         return nombreTabla != null && nombreTabla.matches("^[A-Za-z0-9_]+$");
     }
 
-    // ¡Aquí puedes agregar más métodos!
-    // public List<Producto> getProductos() { ... }
-    // public boolean insertarProducto(Producto p) { ... }
-    // public void ejecutarProcedimiento() { ... con CallableStatement }
+    /**
+     * Ejecuta un bloque PL/SQL y devuelve los mensajes de salida
+     *
+     * @param nombreArchivo Nombre del archivo SQL (ej: "izrael.sql")
+     * @return Lista de mensajes de salida de DBMS_OUTPUT
+     */
+    public List<String> ejecutarBloquePLSQLConSalida(String nombreArchivo) {
+        List<String> mensajes = new ArrayList<>();
+
+        try {
+            String sqlContent = leerArchivoSQL(nombreArchivo);
+
+            if (sqlContent == null || sqlContent.isEmpty()) {
+                mensajes.add("ERROR: El archivo " + nombreArchivo + " está vacío o no existe");
+                return mensajes;
+            }
+
+            return ejecutarBloqueConSalida(sqlContent);
+
+        } catch (Exception e) {
+            mensajes.add("ERROR: " + e.getMessage());
+            return mensajes;
+        }
+    }
+
+    /**
+     * Lee un archivo SQL desde src/main/resource/sql/
+     *
+     * @param nombreArchivo Nombre del archivo (ej: "izrael.sql")
+     * @return Contenido del archivo como String
+     */
+    private String leerArchivoSQL(String nombreArchivo) {
+        try {
+            InputStream inputStream = getClass().getClassLoader()
+                    .getResourceAsStream("sql/" + nombreArchivo);
+
+            if (inputStream == null) {
+                System.err.println("No se encontró el archivo: sql/" + nombreArchivo);
+                return null;
+            }
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                return reader.lines().collect(Collectors.joining("\n"));
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error al leer archivo SQL: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Ejecuta un bloque PL/SQL y devuelve los mensajes de salida
+     *
+     * @param bloquePLSQL Contenido del bloque PL/SQL
+     * @return Lista de mensajes de DBMS_OUTPUT
+     */
+    private List<String> ejecutarBloqueConSalida(String bloquePLSQL) {
+        List<String> mensajes = new ArrayList<>();
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+
+            // Desactivar auto-commit
+            conn.setAutoCommit(false);
+
+            // Habilitar SERVEROUTPUT para ver los DBMS_OUTPUT
+            try (CallableStatement enableOutput = conn.prepareCall(
+                    "BEGIN DBMS_OUTPUT.ENABLE(1000000); END;")) {
+                enableOutput.execute();
+            }
+
+            // Separar comandos SQL que no pueden ir dentro del bloque PL/SQL
+            String[] lineas = bloquePLSQL.split("\n");
+            StringBuilder bloqueLimpio = new StringBuilder();
+
+            for (String linea : lineas) {
+                String lineaTrim = linea.trim().toUpperCase();
+
+                // Ejecutar TRUNCATE por separado
+                if (lineaTrim.startsWith("TRUNCATE ") && lineaTrim.endsWith(";")) {
+                    String truncateCmd = linea.trim();
+                    truncateCmd = truncateCmd.substring(0, truncateCmd.length() - 1);
+
+                    try (Statement stmt = conn.createStatement()) {
+                        stmt.execute(truncateCmd);
+                        mensajes.add("✓ Ejecutado: " + truncateCmd);
+                    } catch (SQLException e) {
+                        mensajes.add("⚠ Advertencia: " + e.getMessage());
+                    }
+                    continue;
+                }
+
+                // Ignorar líneas de SET SERVEROUTPUT
+                if (lineaTrim.startsWith("SET ")) {
+                    continue;
+                }
+
+                bloqueLimpio.append(linea).append("\n");
+            }
+
+            // Ejecutar el bloque PL/SQL limpio
+            String sqlLimpio = bloqueLimpio.toString().trim();
+
+            // Remover el / final si existe
+            if (sqlLimpio.endsWith("/")) {
+                sqlLimpio = sqlLimpio.substring(0, sqlLimpio.length() - 1).trim();
+            }
+
+            if (!sqlLimpio.isEmpty()) {
+                try (CallableStatement stmt = conn.prepareCall(sqlLimpio)) {
+                    stmt.execute();
+                    mensajes.add("✓ Bloque PL/SQL ejecutado correctamente");
+                }
+            }
+
+            // Capturar la salida de DBMS_OUTPUT
+            List<String> outputMensajes = capturarDBMSOutputLista(conn);
+            mensajes.addAll(outputMensajes);
+
+            // Hacer commit manual
+            conn.commit();
+
+        } catch (SQLException e) {
+            mensajes.add("ERROR SQL: " + e.getMessage());
+        }
+
+        return mensajes;
+    }
+
+    /**
+     * Captura la salida de DBMS_OUTPUT.PUT_LINE y la devuelve como lista
+     *
+     * @param conn Conexión activa
+     * @return Lista de mensajes de salida
+     */
+    private List<String> capturarDBMSOutputLista(Connection conn) throws SQLException {
+        List<String> mensajes = new ArrayList<>();
+
+        try (CallableStatement stmt = conn.prepareCall(
+                "DECLARE "
+                        + "  l_line VARCHAR2(32767); "
+                        + "  l_status INTEGER; "
+                        + "BEGIN "
+                        + "  LOOP "
+                        + "    DBMS_OUTPUT.GET_LINE(l_line, l_status); "
+                        + "    EXIT WHEN l_status = 1; "
+                        + "    ? := l_line; "
+                        + "  END LOOP; "
+                        + "END;")) {
+
+            stmt.registerOutParameter(1, java.sql.Types.VARCHAR);
+
+            while (true) {
+                stmt.execute();
+                String line = stmt.getString(1);
+                if (line == null) {
+                    break;
+                }
+                mensajes.add(line);
+            }
+        }
+
+        return mensajes;
+    }
+
+    /**
+     * Ejecuta todos los scripts SQL en orden
+     */
+    public void ejecutarTodosLosScripts() {
+        System.out.println("=== EJECUTANDO SCRIPTS PL/SQL ===\n");
+
+        String[] scripts = {
+                "izrael.sql",
+                "consulta.sql",
+                "Ingrid_Nunez.sql"
+        };
+
+        for (String script : scripts) {
+            System.out.println("\n📋 Ejecutando: " + script);
+            System.out.println("─".repeat(50));
+
+            List<String> mensajes = ejecutarBloquePLSQLConSalida(script);
+
+            if (mensajes.isEmpty() || mensajes.get(0).startsWith("ERROR")) {
+                System.err.println("✗ Error en " + script);
+                for (String mensaje : mensajes) {
+                    System.err.println(mensaje);
+                }
+            } else {
+                System.out.println("✓ " + script + " completado");
+            }
+        }
+
+        System.out.println("\n=== EJECUCIÓN FINALIZADA ===");
+    }
 }
