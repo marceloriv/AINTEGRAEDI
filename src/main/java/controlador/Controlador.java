@@ -2,8 +2,12 @@ package controlador;
 
 import java.util.List;
 import java.util.Map;
+
 import modelo.ConsultaDAO;
 
+/**
+ * Controlador - Coordina la lógica de negocio entre Vista y Modelo
+ */
 public class Controlador {
     private final ConsultaDAO dao;
 
@@ -23,7 +27,7 @@ public class Controlador {
         return dao.obtenerDatosDeTabla(nombreTabla);
     }
 
-    public List<String> probarConexion() {
-        return dao.getResultadosDual();
+    public void ejecutarTodosLosScripts() {
+        dao.ejecutarTodosLosScripts();
     }
 }
