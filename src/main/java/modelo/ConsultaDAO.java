@@ -282,25 +282,23 @@ public class ConsultaDAO {
         List<String> mensajes = new ArrayList<>();
 
         try (CallableStatement stmt = conn.prepareCall(
-                "DECLARE "
-                        + "  l_line VARCHAR2(32767); "
-                        + "  l_status INTEGER; "
-                        + "BEGIN "
-                        + "  LOOP "
-                        + "    DBMS_OUTPUT.GET_LINE(l_line, l_status); "
-                        + "    EXIT WHEN l_status = 1; "
-                        + "    ? := l_line; "
-                        + "  END LOOP; "
-                        + "END;")) {
+                "BEGIN DBMS_OUTPUT.GET_LINE(?, ?); END;")) {
 
             stmt.registerOutParameter(1, java.sql.Types.VARCHAR);
+            stmt.registerOutParameter(2, java.sql.Types.INTEGER);
 
+            // Leer todas las líneas disponibles
             while (true) {
                 stmt.execute();
                 String line = stmt.getString(1);
-                if (line == null) {
+                int status = stmt.getInt(2);
+
+                // status = 0 significa que hay más líneas
+                // status = 1 significa que no hay más líneas
+                if (status == 1 || line == null) {
                     break;
                 }
+
                 mensajes.add(line);
             }
         }
