@@ -115,20 +115,18 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         panelScripts.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 10));
 
         // Botón para ejecutar izrael.sql
-        javax.swing.JButton btnIzrael = new javax.swing.JButton("Ejecutar sql  Isral");
-        btnIzrael.addActionListener(e -> ejecutarScript("resumen_gastos_categoria.sql"));
+        javax.swing.JButton btnIzrael = new javax.swing.JButton("Ejecutar Reporte Multas Atraso");
+        btnIzrael.addActionListener(e -> ejecutarScript("REPORTE_MULTAS_ATRASO.sql"));
         panelScripts.add(btnIzrael);
 
         // Botón para ejecutar consulta.sql
-        javax.swing.JButton btnConsulta = new javax.swing.JButton("Ejecutar SQLMarcelo");
-        btnConsulta.addActionListener(e -> ejecutarScript("historial_pagos.sql"));
-        panelScripts.add(btnConsulta);
-
+        //javax.swing.JButton btnConsulta = new javax.swing.JButton("Ejecutar SQLMarcelo");
+        //btnConsulta.addActionListener(e -> ejecutarScript("historial_pagos.sql"));
+        //panelScripts.add(btnConsulta);
         // Botón para ejecutar Ingrid_Nunez.sql
-        javax.swing.JButton btnIngrid = new javax.swing.JButton("Ejecutar sql Ingrid_Nuñez");
-        btnIngrid.addActionListener(e -> ejecutarScript("reporte_multas_atraso.sql"));
-        panelScripts.add(btnIngrid);
-
+        //javax.swing.JButton btnIngrid = new javax.swing.JButton("Ejecutar sql Ingrid_Nuñez");
+        //btnIngrid.addActionListener(e -> ejecutarScript("reporte_multas_atraso.sql"));
+        //panelScripts.add(btnIngrid);
         // Botón para ejecutar todos
         javax.swing.JButton btnTodos = new javax.swing.JButton("⚡ Ejecutar TODOS");
         btnTodos.setBackground(new java.awt.Color(255, 153, 51));
@@ -140,14 +138,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         // Agregar instrucciones
         javax.swing.JTextArea txtInstrucciones = new javax.swing.JTextArea(
                 "\n📋 INSTRUCCIONES:\n\n"
-                        + "• Haz clic en un botón para ejecutar el script correspondiente\n"
-                        + "• Los scripts crearán y llenarán tablas automáticamente\n"
-                        + "• Revisa la consola para ver la salida de DBMS_OUTPUT\n"
-                        + "• Después de ejecutar, ve a la pestaña 'Listar' para ver los datos\n\n"
-                        + "Scripts disponibles:\n"
-                        + "  - izrael.sql → RESUMEN_GASTOS_CATEGORIA\n"
-                        + "  - consulta.sql → REPORTE_MULTAS_ATRASO\n"
-                        + "  - Ingrid_Nunez.sql → HISTORIAL_PAGOS");
+                + "• Haz clic en un botón para ejecutar el script correspondiente\n"
+                + "• Los scripts crearán y llenarán tablas automáticamente\n"
+                + "• Después de ejecutar, ve a la pestaña 'Listar' para ver los datos\n\n"
+                + "Scripts disponibles:\n"
+                + "  - reporte_multas_atraso.sql → REPORTE_MULTAS_ATRASO\n");
         txtInstrucciones.setEditable(false);
         txtInstrucciones.setBackground(new java.awt.Color(245, 245, 245));
         txtInstrucciones.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 11));
@@ -217,11 +212,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private void ejecutarTodosLosScripts() {
         int respuesta = JOptionPane.showConfirmDialog(this,
                 "¿Estás seguro de que quieres ejecutar TODOS los scripts?\n\n"
-                        + "Se ejecutarán:\n"
-                        + "  • izrael.sql\n"
-                        + "  • consulta.sql\n"
-                        + "  • Ingrid_Nunez.sql\n\n"
-                        + "Esto puede tomar unos segundos.",
+                + "Se ejecutarán:\n"
+                + "  • izrael.sql\n"
+                + "  • consulta.sql\n"
+                + "  • Ingrid_Nunez.sql\n\n"
+                + "Esto puede tomar unos segundos.",
                 "Confirmar ejecución",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
@@ -232,8 +227,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
             JOptionPane.showMessageDialog(this,
                     "✓ Todos los scripts fueron ejecutados\n\n"
-                            + "Revisa la consola para ver los resultados detallados\n"
-                            + "Ve a la pestaña 'Listar' para ver los datos",
+                    + "Revisa la consola para ver los resultados detallados\n"
+                    + "Ve a la pestaña 'Listar' para ver los datos",
                     "Ejecución completada",
                     JOptionPane.INFORMATION_MESSAGE);
 
