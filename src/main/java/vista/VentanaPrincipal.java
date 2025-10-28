@@ -115,18 +115,18 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         panelScripts.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 10));
 
         // Botón para ejecutar izrael.sql
-        javax.swing.JButton btnIzrael = new javax.swing.JButton("Ejecutar izrael.sql");
-        btnIzrael.addActionListener(e -> ejecutarScript("izrael.sql"));
+        javax.swing.JButton btnIzrael = new javax.swing.JButton("Ejecutar sql  Isral");
+        btnIzrael.addActionListener(e -> ejecutarScript("resumen_gastos_categoria.sql"));
         panelScripts.add(btnIzrael);
 
         // Botón para ejecutar consulta.sql
-        javax.swing.JButton btnConsulta = new javax.swing.JButton("Ejecutar consulta.sql");
-        btnConsulta.addActionListener(e -> ejecutarScript("consulta.sql"));
+        javax.swing.JButton btnConsulta = new javax.swing.JButton("Ejecutar SQLMarcelo");
+        btnConsulta.addActionListener(e -> ejecutarScript("historial_pagos.sql"));
         panelScripts.add(btnConsulta);
 
         // Botón para ejecutar Ingrid_Nunez.sql
-        javax.swing.JButton btnIngrid = new javax.swing.JButton("Ejecutar Ingrid_Nunez.sql");
-        btnIngrid.addActionListener(e -> ejecutarScript("Ingrid_Nunez.sql"));
+        javax.swing.JButton btnIngrid = new javax.swing.JButton("Ejecutar sql Ingrid_Nuñez");
+        btnIngrid.addActionListener(e -> ejecutarScript("reporte_multas_atraso.sql"));
         panelScripts.add(btnIngrid);
 
         // Botón para ejecutar todos
