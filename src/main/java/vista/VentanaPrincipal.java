@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * VentanaPrincipal - La Vista en el patrón MVC
- * Usa ConsultaDAO para obtener datos de la base de datos.
- * 
+ * VentanaPrincipal - La Vista en el patrón MVC Usa ConsultaDAO para obtener
+ * datos de la base de datos.
+ *
  * @author Marcelo-HP
  */
 public class VentanaPrincipal extends javax.swing.JFrame {
@@ -33,31 +33,25 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         initComponents();
         cargarTablasEnComboBox();
+        agregarPestanaScripts();
     }
 
     /**
-     * Carga automáticamente las tablas de la base de datos en el ComboBox
-     * Ahora usa el Controlador en vez de acceder directamente a DatabaseManager
+     * Carga las tablas de la base de datos en el ComboBox
      */
     private void cargarTablasEnComboBox() {
         try {
-            // Pedimos las tablas al DAO a través de... bueno, directamente
-            // (o podríamos agregar un método público en Controlador)
             ConsultaDAO dao = new ConsultaDAO();
             List<String> tablas = dao.obtenerNombresDeTablas();
 
-            // Crear modelo para el ComboBox
             DefaultComboBoxModel<String> modelo = new DefaultComboBoxModel<>();
             modelo.addElement("-- Seleccione una tabla --");
 
-            // Agregar nombres de tablas al modelo
             for (String nombreTabla : tablas) {
                 modelo.addElement(nombreTabla);
             }
 
-            // Asignar modelo al ComboBox
             jComboBoxNombreTabla.setModel(modelo);
-
             logger.info("Tablas cargadas exitosamente en el ComboBox");
 
         } catch (Exception e) {
@@ -70,24 +64,20 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }
 
     /**
-     * Muestra los datos de una tabla en el JTable con formato correcto
+     * Muestra los datos de una tabla en el JTable
      */
     private void mostrarDatosEnTabla(String nombreTabla) {
         try {
-            // Obtener datos del DAO
             ConsultaDAO dao = new ConsultaDAO();
             List<String> columnas = dao.obtenerColumnasDeTabla(nombreTabla);
             List<Map<String, Object>> datos = dao.obtenerDatosDeTabla(nombreTabla);
 
-            // Crear modelo para el JTable
             DefaultTableModel modeloTabla = new DefaultTableModel();
 
-            // Agregar columnas al modelo
             for (String columna : columnas) {
                 modeloTabla.addColumn(columna);
             }
 
-            // Agregar filas al modelo
             for (Map<String, Object> fila : datos) {
                 Object[] filaArray = new Object[columnas.size()];
                 for (int i = 0; i < columnas.size(); i++) {
@@ -96,16 +86,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 modeloTabla.addRow(filaArray);
             }
 
-            // Asignar modelo al JTable
             jTable1.setModel(modeloTabla);
-
-            // Ajustar el ancho de las columnas automáticamente
             jTable1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-            logger.info("Datos de la tabla " + nombreTabla + " mostrados correctamente. Total de registros: "
-                    + datos.size());
+            logger.info("Datos de " + nombreTabla + " mostrados. Registros: " + datos.size());
 
-            // Mostrar mensaje de éxito
             if (datos.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
                         "La tabla está vacía",
@@ -123,6 +108,141 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }
 
     /**
+     * Agrega una nueva pestaña con botones para ejecutar scripts PL/SQL
+     */
+    private void agregarPestanaScripts() {
+        javax.swing.JPanel panelScripts = new javax.swing.JPanel();
+        panelScripts.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 10));
+
+        // Botón para ejecutar izrael.sql
+        javax.swing.JButton btnIzrael = new javax.swing.JButton("Ejecutar izrael.sql");
+        btnIzrael.addActionListener(e -> ejecutarScript("izrael.sql"));
+        panelScripts.add(btnIzrael);
+
+        // Botón para ejecutar consulta.sql
+        javax.swing.JButton btnConsulta = new javax.swing.JButton("Ejecutar consulta.sql");
+        btnConsulta.addActionListener(e -> ejecutarScript("consulta.sql"));
+        panelScripts.add(btnConsulta);
+
+        // Botón para ejecutar Ingrid_Nunez.sql
+        javax.swing.JButton btnIngrid = new javax.swing.JButton("Ejecutar Ingrid_Nunez.sql");
+        btnIngrid.addActionListener(e -> ejecutarScript("Ingrid_Nunez.sql"));
+        panelScripts.add(btnIngrid);
+
+        // Botón para ejecutar todos
+        javax.swing.JButton btnTodos = new javax.swing.JButton("⚡ Ejecutar TODOS");
+        btnTodos.setBackground(new java.awt.Color(255, 153, 51));
+        btnTodos.setForeground(java.awt.Color.WHITE);
+        btnTodos.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
+        btnTodos.addActionListener(e -> ejecutarTodosLosScripts());
+        panelScripts.add(btnTodos);
+
+        // Agregar instrucciones
+        javax.swing.JTextArea txtInstrucciones = new javax.swing.JTextArea(
+                "\n📋 INSTRUCCIONES:\n\n"
+                        + "• Haz clic en un botón para ejecutar el script correspondiente\n"
+                        + "• Los scripts crearán y llenarán tablas automáticamente\n"
+                        + "• Revisa la consola para ver la salida de DBMS_OUTPUT\n"
+                        + "• Después de ejecutar, ve a la pestaña 'Listar' para ver los datos\n\n"
+                        + "Scripts disponibles:\n"
+                        + "  - izrael.sql → RESUMEN_GASTOS_CATEGORIA\n"
+                        + "  - consulta.sql → REPORTE_MULTAS_ATRASO\n"
+                        + "  - Ingrid_Nunez.sql → HISTORIAL_PAGOS");
+        txtInstrucciones.setEditable(false);
+        txtInstrucciones.setBackground(new java.awt.Color(245, 245, 245));
+        txtInstrucciones.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 11));
+
+        javax.swing.JScrollPane scrollInstrucciones = new javax.swing.JScrollPane(txtInstrucciones);
+        scrollInstrucciones.setPreferredSize(new java.awt.Dimension(800, 250));
+
+        javax.swing.JPanel panelContenedor = new javax.swing.JPanel();
+        panelContenedor.setLayout(new java.awt.BorderLayout(10, 10));
+        panelContenedor.add(panelScripts, java.awt.BorderLayout.NORTH);
+        panelContenedor.add(scrollInstrucciones, java.awt.BorderLayout.CENTER);
+
+        jTabbedPaneConsultas.addTab("Scripts PL/SQL", panelContenedor);
+    }
+
+    /**
+     * Ejecuta un script SQL específico
+     */
+    private void ejecutarScript(String nombreArchivo) {
+        ConsultaDAO dao = new ConsultaDAO();
+
+        System.out.println("\n" + "=".repeat(60));
+        System.out.println("🚀 EJECUTANDO: " + nombreArchivo);
+        System.out.println("=".repeat(60));
+
+        // Ejecutar y obtener los mensajes de salida
+        List<String> mensajes = dao.ejecutarBloquePLSQLConSalida(nombreArchivo);
+
+        if (mensajes.isEmpty() || mensajes.get(0).startsWith("ERROR")) {
+            // Mostrar error
+            StringBuilder errorMsg = new StringBuilder();
+            errorMsg.append("✗ Error al ejecutar el script\n\n");
+            for (String mensaje : mensajes) {
+                errorMsg.append(mensaje).append("\n");
+            }
+
+            JOptionPane.showMessageDialog(this,
+                    errorMsg.toString(),
+                    "Error - " + nombreArchivo,
+                    JOptionPane.ERROR_MESSAGE);
+        } else {
+            // Mostrar éxito con los mensajes de DBMS_OUTPUT
+            StringBuilder successMsg = new StringBuilder();
+            successMsg.append("✓ Script ejecutado correctamente\n\n");
+            successMsg.append("Resultados:\n");
+            successMsg.append("─".repeat(40)).append("\n");
+
+            for (String mensaje : mensajes) {
+                if (!mensaje.startsWith("✓")) {
+                    successMsg.append("• ").append(mensaje).append("\n");
+                }
+            }
+
+            JOptionPane.showMessageDialog(this,
+                    successMsg.toString(),
+                    "Éxito - " + nombreArchivo,
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            // Recargar las tablas en el ComboBox
+            cargarTablasEnComboBox();
+        }
+    }
+
+    /**
+     * Ejecuta todos los scripts SQL en orden
+     */
+    private void ejecutarTodosLosScripts() {
+        int respuesta = JOptionPane.showConfirmDialog(this,
+                "¿Estás seguro de que quieres ejecutar TODOS los scripts?\n\n"
+                        + "Se ejecutarán:\n"
+                        + "  • izrael.sql\n"
+                        + "  • consulta.sql\n"
+                        + "  • Ingrid_Nunez.sql\n\n"
+                        + "Esto puede tomar unos segundos.",
+                "Confirmar ejecución",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (respuesta == JOptionPane.YES_OPTION) {
+            ConsultaDAO dao = new ConsultaDAO();
+            dao.ejecutarTodosLosScripts();
+
+            JOptionPane.showMessageDialog(this,
+                    "✓ Todos los scripts fueron ejecutados\n\n"
+                            + "Revisa la consola para ver los resultados detallados\n"
+                            + "Ve a la pestaña 'Listar' para ver los datos",
+                    "Ejecución completada",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            // Recargar las tablas en el ComboBox
+            cargarTablasEnComboBox();
+        }
+    }
+
+    /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
@@ -130,10 +250,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated
     // <editor-fold defaultstate="collapsed" desc="Generated
+    // <editor-fold defaultstate="collapsed" desc="Generated
     // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jTabbedPaneConsultas = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jButtonListar = new javax.swing.JButton();
         jComboBoxNombreTabla = new javax.swing.JComboBox<>();
@@ -190,16 +311,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                                         javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
 
-        jTabbedPane1.addTab("Listar", jPanel1);
+        jTabbedPaneConsultas.addTab("Listar", jPanel1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jTabbedPane1));
+                        .addComponent(jTabbedPaneConsultas));
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jTabbedPane1));
+                        .addComponent(jTabbedPaneConsultas));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -263,7 +384,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> jComboBoxNombreTabla;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTabbedPane jTabbedPaneConsultas;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
 }
